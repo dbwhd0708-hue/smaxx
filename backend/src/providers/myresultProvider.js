@@ -20,16 +20,26 @@ function buildIsoTime(eventDateStr, timePointStr) {
   return Number.isNaN(d.getTime()) ? null : d.toISOString();
 }
 
-async function fetchRunnerJson(baseUrl, eventId, bib) {
+async function fetchRunnerJson(baseUrl, eventId, bib, timeoutMs = 10000) {
   const url = `${baseUrl}/api/event/${eventId}/player/${bib}`;
-  const res = await fetch(url, {
-    headers: {
-      Accept: 'application/json',
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-    },
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
-  return res.json();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+    return await res.json();
+  } catch (err) {
+    if (err.name === 'AbortError') throw new Error(`${timeoutMs}ms 안에 응답이 없어 요청을 중단했습니다 (${url})`);
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 function parsePlayerJson(data) {
@@ -76,4 +86,20 @@ async function fetchCheckpointRecords({
   return results;
 }
 
-module.exports = { fetchCheckpointRecords, parsePlayerJson, buildIsoTime };
+/**
+ * Verifies a bib actually exists (as opposed to just "has no checkpoints
+ * yet", which is normal for someone who hasn't started the race). A bib
+ * with zero records but a real name attached is still a valid runner.
+ */
+async function lookupRunner({ eventId, bib, baseUrl = 'https://www.myresult.co.kr' }) {
+  try {
+    const data = await fetchRunnerJson(baseUrl, eventId, bib);
+    if (!data || !data.name) return { found: false };
+    const { name, records } = parsePlayerJson(data);
+    return { found: true, name, records };
+  } catch (err) {
+    return { found: false, error: err.message };
+  }
+}
+
+module.exports = { fetchCheckpointRecords, parsePlayerJson, buildIsoTime, lookupRunner };

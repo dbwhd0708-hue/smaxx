@@ -7,6 +7,39 @@ const STATUS_COLOR = {
   finished: '#16a34a',
 };
 
+// When several runners land on (almost) the same spot on the course, spread
+// them around a small circle so every marker + name stays visible instead of
+// stacking into one. ~0.00015deg latitude is roughly 15-17m on the ground —
+// enough to separate markers visually without misrepresenting position.
+function spreadOverlappingRunners(runners) {
+  const groups = new Map();
+  for (const r of runners) {
+    if (r.lat == null || r.lng == null) continue;
+    const key = `${r.lat.toFixed(4)},${r.lng.toFixed(4)}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(r);
+  }
+
+  const OFFSET_DEG = 0.00015;
+  const spread = [];
+  for (const group of groups.values()) {
+    if (group.length === 1) {
+      spread.push(group[0]);
+      continue;
+    }
+    const latRad = (group[0].lat * Math.PI) / 180;
+    group.forEach((r, i) => {
+      const angle = (2 * Math.PI * i) / group.length;
+      spread.push({
+        ...r,
+        lat: r.lat + OFFSET_DEG * Math.sin(angle),
+        lng: r.lng + (OFFSET_DEG * Math.cos(angle)) / Math.cos(latRad),
+      });
+    });
+  }
+  return spread;
+}
+
 function FitBoundsOnce({ positions }) {
   const map = useMap();
   const fitted = useRef(false);
@@ -25,6 +58,10 @@ export default function MarathonMap({ course, runners, selectedBib, onSelectRunn
     [course]
   );
   const courseColor = course?.properties?.color || '#e11d48';
+  const visibleRunners = useMemo(
+    () => spreadOverlappingRunners(runners.filter((r) => r.status !== 'not_started' && r.lat != null)),
+    [runners]
+  );
 
   return (
     <MapContainer
@@ -47,8 +84,7 @@ export default function MarathonMap({ course, runners, selectedBib, onSelectRunn
         </>
       )}
 
-      {runners.map((runner) => {
-        if (runner.status === 'not_started' || runner.lat == null) return null;
+      {visibleRunners.map((runner) => {
         const isSelected = runner.bib === selectedBib;
         return (
           <CircleMarker

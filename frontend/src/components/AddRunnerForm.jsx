@@ -14,9 +14,16 @@ export default function AddRunnerForm({ onAdded }) {
       const result = await addTrackedRunner(trimmed);
       setStatus({ state: 'success', message: `${result.name || trimmed}님 추가됨` });
       setBib('');
-      onAdded?.();
     } catch (err) {
-      setStatus({ state: 'error', message: err.message });
+      setStatus({
+        state: 'error',
+        message: `${err.message} (서버에는 이미 반영됐을 수 있어요 — 아래 목록을 확인해주세요)`,
+      });
+    } finally {
+      // Refresh regardless of what the response said: on a flaky real-network
+      // request the write can land on the server even if this response
+      // errors out client-side, so the runner list is the source of truth.
+      onAdded?.();
     }
   }
 

@@ -22,15 +22,16 @@ router.post('/tracked-runners', async (req, res) => {
     if (!config.myresult.eventId) {
       return res.status(400).json({ error: 'MYRESULT_EVENT_ID가 설정되어 있지 않습니다.' });
     }
-    const [result] = await myresultProvider.fetchCheckpointRecords({
+    const result = await myresultProvider.lookupRunner({
       eventId: config.myresult.eventId,
       baseUrl: config.myresult.baseUrl,
-      trackedRunners: [{ bib }],
-      requestDelayMs: 0,
+      bib,
     });
-    if (result.error || result.records.length === 0) {
+    if (!result.found) {
       return res.status(404).json({
-        error: `배번호 ${bib}를 찾을 수 없습니다. 대회 ID와 배번호를 다시 확인해주세요.`,
+        error: result.error
+          ? `배번호 ${bib} 조회 중 오류: ${result.error}`
+          : `배번호 ${bib}를 찾을 수 없습니다. 대회 ID와 배번호를 다시 확인해주세요.`,
       });
     }
     store.add(bib, result.name);
