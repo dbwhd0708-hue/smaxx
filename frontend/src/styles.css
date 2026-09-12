@@ -65,6 +65,64 @@ html, body, #root {
   padding: 12px 20px;
 }
 
+.add-runner-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.add-runner-form input {
+  padding: 6px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 180px;
+}
+
+.add-runner-form button {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #2563eb;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.add-runner-form button:disabled {
+  background: #94a3b8;
+  cursor: default;
+}
+
+.add-runner-message {
+  font-size: 12px;
+}
+
+.add-runner-message.error {
+  color: #b91c1c;
+}
+
+.add-runner-message.success {
+  color: #15803d;
+}
+
+.runner-remove-btn {
+  margin-left: 4px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.runner-remove-btn:hover {
+  color: #ef4444;
+}
+
 .runner-list-header {
   font-weight: 600;
   margin-bottom: 8px;

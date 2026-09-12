@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import MarathonMap from './components/MarathonMap.jsx';
 import RunnerList from './components/RunnerList.jsx';
-import { fetchCourse, fetchRunners } from './api.js';
+import AddRunnerForm from './components/AddRunnerForm.jsx';
+import { fetchCourse, fetchRunners, removeTrackedRunner } from './api.js';
 
 const POLL_INTERVAL_MS = 5000;
 
@@ -15,26 +16,31 @@ export default function App() {
     fetchCourse().then(setCourse).catch((e) => setError(e.message));
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    async function poll() {
-      try {
-        const data = await fetchRunners();
-        if (!cancelled) {
-          setSnapshot(data);
-          setError(null);
-        }
-      } catch (e) {
-        if (!cancelled) setError(e.message);
-      }
+  async function refresh() {
+    try {
+      const data = await fetchRunners();
+      setSnapshot(data);
+      setError(null);
+    } catch (e) {
+      setError(e.message);
     }
-    poll();
-    const id = setInterval(poll, POLL_INTERVAL_MS);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
+  }
+
+  useEffect(() => {
+    refresh();
+    const id = setInterval(refresh, POLL_INTERVAL_MS);
+    return () => clearInterval(id);
   }, []);
+
+  async function handleRemoveRunner(bib) {
+    try {
+      await removeTrackedRunner(bib);
+      if (selectedBib === bib) setSelectedBib(null);
+      refresh();
+    } catch (e) {
+      setError(e.message);
+    }
+  }
 
   return (
     <div className="app">
@@ -59,10 +65,12 @@ export default function App() {
       </div>
 
       <div className="app-body">
+        <AddRunnerForm onAdded={refresh} />
         <RunnerList
           runners={snapshot.runners}
           selectedBib={selectedBib}
           onSelectRunner={setSelectedBib}
+          onRemoveRunner={handleRemoveRunner}
         />
       </div>
     </div>

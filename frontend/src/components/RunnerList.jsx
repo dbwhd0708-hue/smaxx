@@ -11,7 +11,7 @@ function formatPace(paceMinPerKm) {
   return `${min}'${String(sec).padStart(2, '0')}"/km`;
 }
 
-export default function RunnerList({ runners, selectedBib, onSelectRunner }) {
+export default function RunnerList({ runners, selectedBib, onSelectRunner, onRemoveRunner }) {
   const sorted = [...runners].sort((a, b) => b.estimatedDistanceKm - a.estimatedDistanceKm);
 
   return (
@@ -30,6 +30,19 @@ export default function RunnerList({ runners, selectedBib, onSelectRunner }) {
               <span className={`status-dot status-${runner.status}`} />
               <span className="runner-name">{runner.name}</span>
               <span className="runner-bib">#{runner.bib}</span>
+              {onRemoveRunner && (
+                <button
+                  type="button"
+                  className="runner-remove-btn"
+                  title="추적 중단"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemoveRunner(runner.bib);
+                  }}
+                >
+                  ×
+                </button>
+              )}
             </div>
             <div className="runner-row-bottom">
               <span>{STATUS_LABEL[runner.status]}</span>

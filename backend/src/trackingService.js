@@ -3,6 +3,7 @@ const { defaultCourse } = require('./course');
 const mockProvider = require('./providers/mockProvider');
 const smartchipProvider = require('./providers/smartchipProvider');
 const myresultProvider = require('./providers/myresultProvider');
+const trackedRunnersStore = require('./trackedRunnersStore');
 
 const runnerState = new Map(); // bib -> { bib, name, records: [{km, time}] }
 let lastPolledAt = null;
@@ -17,10 +18,12 @@ function mergeRecords(existing, incoming) {
 
 async function pollOnce() {
   try {
+    const trackedRunners = trackedRunnersStore.list();
+
     let raw;
     if (config.dataSource === 'smartchip') {
       raw = await smartchipProvider.fetchCheckpointRecords({
-        trackedRunners: config.smartchip.trackedRunners,
+        trackedRunners,
         urlTemplate: config.smartchip.urlTemplate,
         selectors: config.smartchip.selectors,
         requestDelayMs: config.smartchip.requestDelayMs,
@@ -29,7 +32,7 @@ async function pollOnce() {
       raw = await myresultProvider.fetchCheckpointRecords({
         eventId: config.myresult.eventId,
         baseUrl: config.myresult.baseUrl,
-        trackedRunners: config.myresult.trackedRunners,
+        trackedRunners,
         requestDelayMs: config.myresult.requestDelayMs,
       });
     } else {
@@ -117,6 +120,10 @@ function getHistory(bib) {
   return runnerState.get(bib) || null;
 }
 
+function removeRunner(bib) {
+  runnerState.delete(bib);
+}
+
 function start() {
   pollOnce();
   timer = setInterval(pollOnce, config.refreshIntervalMs);
@@ -126,4 +133,4 @@ function stop() {
   if (timer) clearInterval(timer);
 }
 
-module.exports = { start, stop, getSnapshot, getHistory, pollOnce };
+module.exports = { start, stop, getSnapshot, getHistory, pollOnce, removeRunner };
