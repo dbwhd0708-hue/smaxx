@@ -1,0 +1,47 @@
+{
+  "event_id": 92,
+  "num": "18915",
+  "name": "최유종",
+  "tag": 18915,
+  "gender": "M",
+  "result_nettime": "03:44:36.13",
+  "event": {
+    "id": 92,
+    "name": "2024 JTBC 서울마라톤",
+    "date": "2024-11-03",
+    "time": "08:00:00"
+  },
+  "course": {
+    "event_id": 92,
+    "course_cd": "Full",
+    "distance": "42.195",
+    "points": [
+      { "point_cd": "P0", "name": "출발", "distance": "0.00" },
+      { "point_cd": "P1", "name": "5K", "distance": "5.00" },
+      { "point_cd": "P4", "name": "10K", "distance": "10.00" },
+      { "point_cd": "P5", "name": "15K", "distance": "15.00" },
+      { "point_cd": "P6", "name": "20K", "distance": "20.00" },
+      { "point_cd": "P7", "name": "하프", "distance": "21.10" },
+      { "point_cd": "P8", "name": "25K", "distance": "25.00" },
+      { "point_cd": "P9", "name": "30K", "distance": "30.00" },
+      { "point_cd": "P10", "name": "35K", "distance": "35.00" },
+      { "point_cd": "P11", "name": "40K", "distance": "40.00" },
+      { "point_cd": "P12", "name": "도착", "distance": "42.20" }
+    ]
+  },
+  "records": [
+    { "point_cd": "P0", "time_point": "08:25:28.28", "point": { "name": "출발", "distance": "0.00" } },
+    { "point_cd": "P1", "time_point": "08:51:28.87", "point": { "name": "5K", "distance": "5.00" } },
+    { "point_cd": "P10", "time_point": "11:24:29.98", "point": { "name": "35K", "distance": "35.00" } },
+    { "point_cd": "P11", "time_point": "11:56:59.44", "point": { "name": "40K", "distance": "40.00" } },
+    { "point_cd": "P12", "time_point": "12:10:04.41", "point": { "name": "도착", "distance": "42.20" } },
+    { "point_cd": "P4", "time_point": "09:16:58.93", "point": { "name": "10K", "distance": "10.00" } },
+    { "point_cd": "P5", "time_point": "09:41:39.18", "point": { "name": "15K", "distance": "15.00" } },
+    { "point_cd": "P6", "time_point": "10:06:06.5", "point": { "name": "20K", "distance": "20.00" } },
+    { "point_cd": "P7", "time_point": "10:13:34.53", "point": { "name": "하프", "distance": "21.10" } },
+    { "point_cd": "P8", "time_point": "10:32:48.36", "point": { "name": "25K", "distance": "25.00" } },
+    { "point_cd": "P9", "time_point": "10:58:05.7", "point": { "name": "30K", "distance": "30.00" } }
+  ],
+  "rank_course": "3729",
+  "total_rank_course": "13538"
+}

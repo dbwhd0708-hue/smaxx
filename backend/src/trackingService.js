@@ -2,6 +2,7 @@ const config = require('./config');
 const { defaultCourse } = require('./course');
 const mockProvider = require('./providers/mockProvider');
 const smartchipProvider = require('./providers/smartchipProvider');
+const myresultProvider = require('./providers/myresultProvider');
 
 const runnerState = new Map(); // bib -> { bib, name, records: [{km, time}] }
 let lastPolledAt = null;
@@ -16,15 +17,24 @@ function mergeRecords(existing, incoming) {
 
 async function pollOnce() {
   try {
-    const raw =
-      config.dataSource === 'smartchip'
-        ? await smartchipProvider.fetchCheckpointRecords({
-            trackedRunners: config.smartchip.trackedRunners,
-            urlTemplate: config.smartchip.urlTemplate,
-            selectors: config.smartchip.selectors,
-            requestDelayMs: config.smartchip.requestDelayMs,
-          })
-        : await mockProvider.fetchCheckpointRecords({ runnerCount: config.mock.runnerCount });
+    let raw;
+    if (config.dataSource === 'smartchip') {
+      raw = await smartchipProvider.fetchCheckpointRecords({
+        trackedRunners: config.smartchip.trackedRunners,
+        urlTemplate: config.smartchip.urlTemplate,
+        selectors: config.smartchip.selectors,
+        requestDelayMs: config.smartchip.requestDelayMs,
+      });
+    } else if (config.dataSource === 'myresult') {
+      raw = await myresultProvider.fetchCheckpointRecords({
+        eventId: config.myresult.eventId,
+        baseUrl: config.myresult.baseUrl,
+        trackedRunners: config.myresult.trackedRunners,
+        requestDelayMs: config.myresult.requestDelayMs,
+      });
+    } else {
+      raw = await mockProvider.fetchCheckpointRecords({ runnerCount: config.mock.runnerCount });
+    }
 
     for (const runner of raw) {
       const prev = runnerState.get(runner.bib);

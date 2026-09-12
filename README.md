@@ -20,33 +20,60 @@ cd frontend && npm install && npm run dev
 Vite 프록시로 `/api`를 백엔드로 넘겨줍니다. 기본 설정(`DATA_SOURCE=mock`)은 24명의
 가상 주자가 서로 다른 페이스로 코스를 달리는 모습을 바로 보여줍니다.
 
-## 실제 스마트칩 데이터 연결하기
+## 실제 기록 데이터 연결하기 (myresult.co.kr, 권장)
 
-`backend/.env.example`을 `.env`로 복사한 뒤:
+myresult.co.kr(스마트칩 기반 대회들의 결과 조회 사이트, 예: JTBC 서울마라톤)은
+브라우저 개발자도구로 확인한 결과 다음 JSON API로 개인 기록을 제공합니다:
 
 ```
-DATA_SOURCE=smartchip
+GET https://www.myresult.co.kr/api/event/{eventId}/player/{bib}
+```
+
+`backend/.env.example`을 `.env`로 복사한 뒤 채워주세요:
+
+```
+DATA_SOURCE=myresult
+MYRESULT_EVENT_ID=92          # myresult.co.kr/92 형태의 대회 개요 페이지 URL에서 확인
+MYRESULT_BIBS=18915:최유종,20001:홍길동
+REFRESH_INTERVAL_MS=30000     # 30초마다 폴링
+```
+
+`backend/src/providers/myresultProvider.js`가 각 배번호에 대해 이 API를 호출해서
+`records[]`(구간명, km, 통과시각)를 뽑아 옵니다. 2024 JTBC 서울마라톤의 실제 배번호로
+응답 구조를 확인하고 만들었기 때문에(`backend/test-fixtures/` 참고) 바로 동작합니다 —
+단, 이 저장소를 만든 개발 환경 자체는 네트워크 정책상 myresult.co.kr로 나가는 요청이
+막혀 있어서 실제 사이트 응답으로 최종 확인은 못 했고, 로컬 목업 서버로 파이프라인
+전체(파싱 → 페이스 계산 → 지도 좌표 변환)만 검증했습니다. 실행 환경에 인터넷이 되면
+그대로 동작해야 하지만, 응답 형식이 바뀌었다면 `myresultProvider.js`의
+`parsePlayerJson`만 손보면 됩니다.
+
+**참고:** API 응답의 `course.path`/`course.points[].lat,lng`는 실제 코스 좌표가
+아닌 것으로 보입니다(일부 지점이 서울이 아닌 제주도 위도에 찍혀 있고, 나머지도
+반경 2km 안에 몰려 있어 42.195km 코스와 맞지 않음). 그래서 지도에 그리는 코스 선은
+이 API 데이터를 쓰지 않고, 아래에서 설명하는 `course-full.geojson`의 근사 경로를
+그대로 사용합니다 — 주자 위치는 API에서 받은 "km 숫자"만으로 그 경로 위에 계산됩니다.
+
+## 스마트칩류 사이트를 HTML로 직접 긁어야 할 때 (대안)
+
+JSON API를 못 찾은 사이트라면 `backend/src/providers/smartchipProvider.js`가
+"km 라벨이 있는 헤더 행 + 그 아래 HH:MM:SS 형식의 기록 셀"을 찾는 범용 휴리스틱
+파서를 제공합니다. `DATA_SOURCE=smartchip`으로 두고:
+
+```
 SMARTCHIP_URL_TEMPLATE=https://smartchip.co.kr/Search_Ballyno.html?usedata={bib}
 SMARTCHIP_BIBS=10321:홍길동,10322:김철수
 ```
 
-처럼 채우면 `backend/src/providers/smartchipProvider.js`가 각 배번호 페이지를 주기적으로
-가져와 구간 기록 표를 파싱합니다.
-
-**중요 — 이 저장소를 만든 개발 환경은 네트워크 정책상 smartchip.co.kr /
-myresult.co.kr 로 나가는 요청이 차단되어 있어서, 실제 페이지 구조에 맞춰 스크래퍼를
-직접 검증하지 못했습니다.** 그래서 파서는 "km 라벨이 있는 헤더 행 + 그 아래 HH:MM:SS
-형식의 기록 셀"을 찾는 범용 휴리스틱으로 작성했고, 실제 페이지에서 잘 안 맞으면:
+이 방식은 실제 페이지로 검증하지 못했으므로(같은 네트워크 제약), 잘 안 맞으면:
 
 1. `.env`에 `DEBUG_HTML=1`을 넣고 실행하면 가져온 HTML이 `backend/.debug-html/`에
    저장됩니다. 실제 페이지 구조를 보고 어디가 안 맞는지 확인하세요.
 2. 브라우저 개발자도구로 구간 기록 표의 정확한 선택자를 확인해서
    `SMARTCHIP_SELECTORS`에 JSON으로 넣어주면 (`{"row":"...","km":"...","time":"..."}`)
    범용 파서 대신 그 선택자를 그대로 씁니다.
-3. 일부 사이트는 배번호만으로 조회가 안 되고 이름/생년월일을 같이 요구할 수 있습니다 —
-   `SMARTCHIP_BIBS`의 `bib:name` 외에 필요하면 `config.js`/`smartchipProvider.js`에
-   `birth` 필드를 추가하세요.
-4. 대회 주최측/스마트칩 이용약관을 확인하고, 짧은 주기로 과도하게 요청하지 마세요
+3. 가능하면 먼저 브라우저 개발자도구 Network 탭에서 JSON API가 있는지부터 확인하세요
+   (myresult.co.kr처럼 훨씬 가볍고 안정적입니다).
+4. 대회 주최측 이용약관을 확인하고, 짧은 주기로 과도하게 요청하지 마세요
    (`SMARTCHIP_REQUEST_DELAY_MS`로 요청 간 딜레이 조절 가능).
 
 ## 코스 데이터에 대한 안내
