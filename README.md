@@ -93,6 +93,40 @@ SMARTCHIP_BIBS=10321:홍길동,10322:김철수
 (`backend/src/course.js`가 좌표 목록으로부터 누적 거리를 계산해서 자동으로 총 거리에
 맞춰 스케일링합니다).
 
+## 친구들도 볼 수 있게 배포하기 (Render, 무료)
+
+로컬 `npm run dev`는 내 컴퓨터에서만 보입니다. 친구들도 링크로 볼 수 있게 하려면
+[Render](https://render.com)의 무료 웹 서비스에 올리는 걸 추천합니다 — 컴퓨터를 꺼도
+계속 떠 있습니다. 이 저장소는 백엔드가 프론트엔드 빌드 결과물을 같이 서빙하도록
+되어 있어서(`backend/src/index.js`), 서비스 하나만 만들면 됩니다.
+
+1. https://render.com 에서 GitHub 계정으로 가입/로그인
+2. 대시보드에서 **New +** → **Blueprint** 선택 → 이 저장소(`dbwhd0708-hue/smaxx`) 연결
+   → 브랜치는 `claude/marathon-runner-tracking-o0efdz` 선택. 저장소 루트의
+   `render.yaml`을 Render가 자동으로 읽어서 빌드/시작 명령을 채워줍니다.
+   (Blueprint가 안 보이거나 안 되면 **New +** → **Web Service**로 직접 만들고
+   Build Command: `npm run build`, Start Command: `npm start`, Root Directory는
+   비워두기 — 로 수동 입력해도 동일합니다.)
+3. 환경 변수 입력 화면에서:
+   - `MYRESULT_EVENT_ID`: 추적할 대회의 myresult 이벤트 ID (예: `92`)
+   - `MYRESULT_BIBS`: 항상 보이길 원하는 배번호들, `배번호:이름` 콤마 구분 (선택 사항 —
+     비워두고 나중에 화면에서 추가해도 됩니다)
+   - 나머지(`DATA_SOURCE`, `MYRESULT_BASE_URL`, `REFRESH_INTERVAL_MS`)는 `render.yaml`에
+     이미 기본값이 들어 있어 그대로 두면 됩니다
+4. **Create Web Service** 클릭 → 몇 분 기다리면 `https://xxxx.onrender.com` 형태의
+   주소가 생깁니다. 그 링크를 친구들에게 공유하면 됩니다.
+
+**알아두면 좋은 점:**
+- 무료 플랜은 15분간 접속이 없으면 서버가 잠들고, 다음 접속 때 깨어나느라 30초~1분
+  정도 로딩이 걸릴 수 있습니다. 마라톤 당일처럼 계속 볼 때는 한 번 깨워두면 그동안은
+  빠릅니다.
+- 화면에서 배번호를 추가하면 `backend/data/tracked-runners.json`에 저장되는데, 무료
+  플랜은 코드를 새로 배포할 때(= `git push`할 때마다 Render가 자동 재배포) 이 파일이
+  초기화될 수 있습니다. 항상 추적하고 싶은 배번호는 `MYRESULT_BIBS` 환경 변수에도
+  넣어두면 재배포해도 안전합니다.
+- 이후 제가 코드를 고쳐서 브랜치에 푸시하면 Render가 자동으로 재배포합니다(Auto-Deploy
+  기본 켜져 있음) — 따로 해주실 건 없습니다.
+
 ## 위치 추정 방식
 
 각 주자는 구간 기록이 쌓일 때마다:

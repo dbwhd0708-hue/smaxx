@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: marathon-tracker
+    env: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    envVars:
+      - key: DATA_SOURCE
+        value: myresult
+      - key: MYRESULT_EVENT_ID
+        sync: false
+      - key: MYRESULT_BASE_URL
+        value: https://www.myresult.co.kr
+      - key: MYRESULT_BIBS
+        sync: false
+      - key: REFRESH_INTERVAL_MS
+        value: "30000"
