@@ -1,0 +1,140 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  background: #f8fafc;
+  color: #1e293b;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.app-header {
+  padding: 12px 20px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.app-header h1 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.app-header-meta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.badge {
+  background: #eef2ff;
+  color: #4338ca;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.badge-error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.app-map {
+  height: 60vh;
+  min-height: 360px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.app-body {
+  flex: 1;
+  overflow: auto;
+  padding: 12px 20px;
+}
+
+.runner-list-header {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.runner-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.runner-list li {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.runner-list li:hover {
+  border-color: #94a3b8;
+}
+
+.runner-list li.selected {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px #2563eb;
+}
+
+.runner-row-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.runner-bib {
+  margin-left: auto;
+  font-weight: 400;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.runner-row-bottom {
+  display: flex;
+  justify-content: space-between;
+  color: #64748b;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.status-not_started { background: #9ca3af; }
+.status-dot.status-running { background: #2563eb; }
+.status-dot.status-finished { background: #16a34a; }
+
+.runner-label {
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 5px;
+}
